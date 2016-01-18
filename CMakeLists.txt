@@ -5,30 +5,32 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     set(_boost_COMPILER -clang-darwin42)
 endif()
 
-find_package(Boost COMPONENTS regex thread system REQUIRED)
+find_package(Boost COMPONENTS regex thread system date_time chrono REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibXml2 REQUIRED)
 
 # define includes of external libs
-SET (CGoGN_EXT_INCLUDES
+set (CGoGN_EXT_INCLUDES
     ${ZLIB_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}
     ${Boost_INCLUDE_DIRS}
 )
 
 # define libs for external libs
-SET (CGoGN_EXT_LIBS
+set (CGoGN_EXT_LIBS
     ${ZLIB_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${Boost_SYSTEM_LIBRARY}
     ${Boost_REGEX_LIBRARY}
     ${Boost_THREAD_LIBRARY}
+    ${Boost_DATE_TIME_LIBRARY}
+    ${Boost_CHRONO_LIBRARY}
 )
 
-IF(NOT WIN32)
+if(NOT WIN32)
     SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Woverride-init -fPIC")
-ENDIF()
+endif()
 
 add_definitions(-DBOOST_ALL_DYN_LINK
                 -DBOOST_LINKING_PYTHON
@@ -46,7 +48,6 @@ include_directories(
     include
     ${CGoGN_EXT_INCLUDES}
 )
-
 
 file(
     GLOB_RECURSE
@@ -73,8 +74,6 @@ file(
     include/Algo/*.h
 )
 
-
-
 file(
     GLOB        # WARNING NO MORE RECURSE TO AVOID TAKING QT FILES
     files_utils
@@ -82,9 +81,16 @@ file(
     include/Utils/*.hpp
     include/Utils/*.h
 )
-
-add_library( cgogn ${files_topology} ${files_container} ${files_algo} ${files_utils} )
+if(WIN32)
+    add_library( cgogn STATIC ${files_topology} ${files_container} ${files_algo} ${files_utils} )
+else()
+    add_library( cgogn SHARED ${files_topology} ${files_container} ${files_algo} ${files_utils} )
+endif()
+target_link_libraries(cgogn ${CGoGN_EXT_LIBS})
 
 install(DIRECTORY include DESTINATION include/cgogn)
-install(TARGETS cgogn DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
-
+install(TARGETS cgogn
+    RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin
+    LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+)
