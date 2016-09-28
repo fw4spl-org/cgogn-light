@@ -5,6 +5,8 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
     set(_boost_COMPILER -clang-darwin42)
 endif()
 
+option(DISABLE_AUTO_LINK "Disable auto-link boost libraries" OFF)
+
 find_package(Boost COMPONENTS regex thread system date_time chrono REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibXml2 REQUIRED)
@@ -32,9 +34,15 @@ if(NOT WIN32)
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Woverride-init -fPIC")
 endif()
 
-add_definitions(-DBOOST_ALL_DYN_LINK
-                -DBOOST_LINKING_PYTHON
-                )
+if(DISABLE_AUTO_LINK)
+    add_definitions(-DBOOST_ALL_NO_LIB
+                    -DBOOST_LINKING_PYTHON
+                    )
+else()
+    add_definitions(-DBOOST_ALL_DYN_LINK
+                    -DBOOST_LINKING_PYTHON
+                    )
+endif()
 
 if(${CMAKE_BUILD_TYPE} STREQUAL Release)
     # ADD_DEFINITIONS(-DNOTOPOWARNING -DWITH_ZINRI)
