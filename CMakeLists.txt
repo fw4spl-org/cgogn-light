@@ -10,12 +10,14 @@ option(DISABLE_AUTO_LINK "Disable auto-link boost libraries" OFF)
 find_package(Boost COMPONENTS regex thread system date_time chrono REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(LibXml2 REQUIRED)
+find_package(Eigen3 REQUIRED)
 
 # define includes of external libs
 set (CGoGN_EXT_INCLUDES
     ${ZLIB_INCLUDE_DIRS}
     ${LIBXML2_INCLUDE_DIR}
     ${Boost_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIR}
 )
 
 # define libs for external libs
